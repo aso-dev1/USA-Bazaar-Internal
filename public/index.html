@@ -1,0 +1,1254 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>USA Bazaar Convert — Updated</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --muted:#9aa4b2;
+      --accent:#4f46e5;
+      --accent-2:#06b6d4;
+      --iqd:#f59e0b;
+      --glass: rgba(255,255,255,0.03);
+      --radius:12px;
+      --panel-radius:12px;
+      --total-blue:#3b82f6;
+      --reset-gradient:linear-gradient(90deg,#4f46e5,#06b6d4);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:radial-gradient(1200px 600px at 10% 10%, rgba(79,70,229,0.12), transparent), var(--bg);
+      color:#e6eef8;
+      min-height:100vh;
+      padding:20px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+    }
+
+    .container{
+      width:1200px;
+      max-width:100%;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:16px;
+      padding:18px;
+      box-shadow:0 10px 40px rgba(2,6,23,0.75);
+      display:grid;
+      grid-template-columns:1fr 420px;
+      gap:18px;
+    }
+
+    header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+    .logo{display:flex;gap:12px;align-items:center}
+    .mark{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#10b981);display:flex;align-items:center;justify-content:center;font-weight:700;color:white;font-size:20px}
+    h1{font-size:18px;margin:0}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    /* Panel base */
+    .panel{
+      background:var(--card);
+      padding:14px;border-radius:var(--panel-radius);
+      position:relative;
+      border-left:4px solid rgba(255,255,255,0.03);
+    }
+    .panel__header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .panel__reset{
+      border:0;padding:8px 10px;border-radius:10px;background:var(--reset-gradient);color:white;font-weight:700;cursor:pointer;
+      box-shadow:0 6px 18px rgba(79,70,229,0.16);font-size:13px;
+    }
+
+    /* colored borders to feel separate (subtle) */
+    .panel--inputs{ border-left-color: rgba(79,70,229,0.8) }   /* purple */
+    .panel--ship{ border-left-color: rgba(6,182,212,0.85) }    /* teal */
+    .panel--multi{ border-left-color: rgba(139,92,246,0.85) }  /* violet */
+    .panel--balance{ border-left-color: rgba(245,158,11,0.85) }/* amber */
+    .panel--summary{ border-left-color: rgba(59,130,246,0.85) }/* blue */
+    .panel--payback{ border-left-color: rgba(239,68,68,0.85) } /* red */
+    .panel--percent{ border-left-color: rgba(16,185,129,0.85) }/* green-ish */
+    .panel--converter{ border-left-color: rgba(148,163,184,0.85) } /* gray */
+
+    label{display:block;font-size:13px;margin-bottom:8px;color:var(--muted)}
+    .input,.select{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:var(--glass);color:inherit;font-size:14px;transition:all .18s ease}
+    .input.small{width:180px}
+    .input.tiny{width:110px;padding:6px 8px;border-radius:8px;font-size:13px}
+    .input:disabled{opacity:0.55;background:rgba(255,255,255,0.01);border-color:rgba(255,255,255,0.02);cursor:not-allowed}
+    .input.unlocked{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-color:rgba(79,70,229,0.7);box-shadow:0 10px 30px rgba(79,70,229,0.09);transform:translateY(-1px)}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end}
+    .checkbox{appearance:none;width:20px;height:20px;border-radius:6px;background:transparent;border:1px solid rgba(255,255,255,0.08);display:inline-grid;place-items:center;cursor:pointer}
+    .checkbox:checked{background:linear-gradient(135deg,var(--accent),var(--accent-2));border:0}
+    .radio{appearance:none;width:18px;height:18px;border-radius:50%;border:1px solid rgba(255,255,255,0.08);display:inline-grid;place-items:center}
+    .radio:checked{box-shadow:inset 0 0 0 6px rgba(79,70,229,0.95)}
+    .summary{display:flex;flex-direction:column;gap:8px}
+    .line{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)}
+    .total{font-size:20px;font-weight:700}
+    .iqd-line{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:linear-gradient(90deg, rgba(245,158,11,0.06), rgba(79,70,229,0.02));color:var(--iqd);font-weight:700}
+    .payback{display:flex;flex-direction:column;gap:12px}
+    .pay-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .converter{display:flex;gap:8px;align-items:center}
+    .controls{display:flex;gap:8px;align-items:center}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:linear-gradient(90deg,var(--accent),var(--accent-2));border:none;color:white;font-weight:600;cursor:pointer}
+    .muted{color:var(--muted);font-size:13px}
+    .tiny-muted{color:var(--muted);font-size:12px;margin-left:8px}
+    .copy-status{font-size:13px;color:var(--muted);margin-left:8px}
+    .small-muted{font-size:12px;color:var(--muted)}
+    .badge{padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.02);font-weight:600;color:var(--muted)}
+    svg.icon{width:18px;height:18px;vertical-align:middle}
+    .muted-btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:6px 8px;border-radius:8px;color:var(--muted);cursor:pointer}
+
+    /* Status color classes (applied to payback numeric fields and badge) */
+    .status-return { color: #f59e0b !important; }
+    .status-due { color: #ef4444 !important; }
+    .status-exact { color: #10b981 !important; }
+    .status-neutral { color: rgba(255,255,255,0.7) !important; }
+
+    /* Total card fixed blue */
+    .total-blue { color: var(--total-blue) !important; }
+
+    /* aggregator rows */
+    .agg-row{display:flex;gap:8px;align-items:center}
+    .agg-row input{flex:1}
+
+    /* responsive: stack on small screens */
+    @media (max-width:1100px){
+      .container{grid-template-columns:1fr 360px;padding:14px}
+    }
+    @media (max-width:880px){
+      .container{grid-template-columns:1fr;padding:12px;gap:12px}
+      .panel{padding:12px}
+      .input.small{width:100%}
+      .form-grid{grid-template-columns:1fr}
+      .logo{gap:8px}
+      .mark{width:40px;height:40px}
+    }
+
+    /* make number-like text inputs monospaced for clarity */
+    input.input.num { font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <header>
+      <div class="logo">
+        <div class="mark">US</div>
+        <div>
+          <h1>USA Bazaar Convert</h1>
+          <p class="lead">Item + Tax + Commission + Shipping + Local shipping = Total</p>
+        </div>
+      </div>
+      <div class="muted">Simple • Modern UI — updated</div>
+    </header>
+
+    <!-- LEFT column -->
+    <main>
+
+      <!-- Inputs -->
+      <section class="panel panel--inputs" aria-labelledby="inputs-title">
+        <div class="panel__header">
+          <div>
+            <h2 id="inputs-title" style="margin:0 0 6px 0">Inputs</h2>
+            <div class="small-muted">Per-item values and order-level local shipping</div>
+          </div>
+          <button class="panel__reset" id="resetInputs">Reset Inputs</button>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:18px;margin-bottom:10px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:10px">
+            <label style="display:flex;align-items:center;gap:8px"><input name="shipTypeTop" id="shipFlatTop" class="radio" type="radio" checked> $ (Flat)</label>
+            <label style="display:flex;align-items:center;gap:8px"><input name="shipTypeTop" id="shipWeightTop" class="radio" type="radio"> lbs (Weight)</label>
+          </div>
+          <div class="muted">Choose shipping mode — Flat $ per item is default</div>
+        </div>
+
+        <div class="form-grid">
+          <div>
+            <label>Item price ($)</label>
+            <input id="price" class="input num" type="text" inputmode="decimal" placeholder="Ex: 14.32" value="">
+          </div>
+
+          <div>
+            <label id="shippingLabel">Shipping ($ per item)</label>
+            <input id="shippingInput" class="input num" type="text" inputmode="decimal" placeholder="" value="">
+          </div>
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <div style="flex:1;min-width:120px">
+            <label>Quantity</label>
+            <input id="quantity" class="input small num" type="text" inputmode="numeric" value="1">
+          </div>
+
+          <div style="flex:1;min-width:220px">
+            <label>Tax (%)</label>
+            <input id="tax" class="input num" type="text" inputmode="decimal" value="6" disabled>
+          </div>
+
+          <div style="flex:0 0 140px">
+            <label>Commission ($)</label>
+            <input id="commission" class="input small num" type="text" inputmode="decimal" value="1" disabled>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
+            <input id="unlockTax" class="checkbox" type="checkbox">
+            <label for="unlockTax" class="muted">Allow editing tax & commission</label>
+          </div>
+        </div>
+
+        <hr style="margin:14px 0;border:0;border-top:1px solid rgba(255,255,255,0.03)">
+
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap">
+          <label class="muted" style="margin:0 6px 0 0">Per-lb rate</label>
+          <input id="perLb" class="input small num" type="text" inputmode="decimal" value="6" disabled>
+          <input id="unlockPerLb" class="checkbox" type="checkbox">
+          <label for="unlockPerLb" class="muted">Allow changing 1 lb = $</label>
+          <div style="margin-left:auto;color:var(--muted);font-size:13px">When "lbs" is selected above, Shipping input is treated as weight per item.</div>
+        </div>
+
+        <div>
+          <label>Local shipping (optional, $ per order)</label>
+          <input id="localShipping" class="input num" type="text" inputmode="decimal" placeholder="" value="">
+        </div>
+
+        <p class="muted" style="margin-top:10px">Note: Tax, commission and shipping are shown **per item** in the Summary. Local shipping is per-order and added after multiplying per-item subtotal by quantity.</p>
+
+        <div style="display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap">
+          <div class="small-muted">Exchange rate</div>
+          <input id="perUsd" class="input tiny num" type="text" inputmode="numeric" value="1415" disabled>
+          <input id="unlockIQD" class="checkbox" type="checkbox">
+          <label for="unlockIQD" class="muted">Allow editing IQD rate</label>
+        </div>
+
+      </section>
+
+      <!-- Shipping Finder -->
+      <section class="panel panel--ship" id="shipFinderPanel" style="margin-top:8px;">
+        <div class="panel__header">
+          <div>
+            <h3 style="margin:0 0 6px 0">Shipping Finder (given final Total)</h3>
+            <div class="small-muted">Find per-item shipping S so final total matches desired Total (uses tax=6% & commission=$1)</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="panel__reset" id="resetShipFinder">Reset Ship Finder</button>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <div style="flex:1;min-width:160px">
+              <label>Desired final Total (USD)</label>
+              <input id="sf_total" class="input num" type="text" inputmode="decimal" placeholder="e.g. 35.18">
+            </div>
+
+            <div style="flex:1;min-width:160px">
+              <label>Item price (USD)</label>
+              <input id="sf_item" class="input num" type="text" inputmode="decimal" placeholder="e.g. 14.32">
+            </div>
+
+            <div style="flex:0 0 120px">
+              <label>Quantity</label>
+              <input id="sf_qty" class="input small num" type="text" inputmode="numeric" value="1">
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <div style="flex:1;min-width:160px">
+              <label>Local shipping (order)</label>
+              <input id="sf_local" class="input num" type="text" inputmode="decimal" value="0">
+            </div>
+
+            <div style="flex:1;min-width:160px">
+              <label>Per-lb rate (for weight estimate)</label>
+              <input id="sf_perLb" class="input num" type="text" inputmode="decimal" value="6">
+            </div>
+
+            <div style="flex:0 0 220px">
+              <label style="opacity:0">calc</label>
+              <div style="display:flex;gap:8px;align-items:center">
+                <button id="sf_compute" class="btn">Find shipping</button>
+                <button id="sf_copy" class="muted-btn">Copy formula</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <div style="flex:1">
+              <div class="small-muted">Shipping per item (USD)</div>
+              <div id="sf_shippingPerItem" style="font-weight:700">$0.00</div>
+            </div>
+
+            <div style="flex:1">
+              <div class="small-muted">Total shipping (USD)</div>
+              <div id="sf_shippingTotal" style="font-weight:700">$0.00</div>
+            </div>
+
+            <div style="flex:1">
+              <div class="small-muted">Estimated weight (total)</div>
+              <div id="sf_weightTotal" style="font-weight:700">0 Lbs</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="small-muted">Formula used:</div>
+            <pre id="sf_formula" style="margin:6px 0;padding:10px;background:rgba(255,255,255,0.02);border-radius:8px;font-size:13px;white-space:pre-wrap"></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Multiple totals aggregator -->
+      <section class="panel panel--multi" id="multiTotals" style="margin-top:8px;">
+        <div class="panel__header">
+          <div>
+            <h3 style="margin:0 0 6px 0">Multiple Totals — add many item totals</h3>
+            <div class="small-muted">Type totals: typing into the last row auto-creates a new input</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="panel__reset" id="resetMulti">Reset Multiple</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+          <button id="addTotalBtn" class="btn">+ Add total</button>
+          <button id="clearTotalsBtn" class="muted-btn">Clear all</button>
+          <button id="copyTotalsBtn" class="btn">Copy Totals</button>
+          <div class="small-muted" style="margin-left:auto">Grand total of entries below</div>
+        </div>
+
+        <div id="totalsList" style="display:flex;flex-direction:column;gap:8px"></div>
+
+        <div style="display:flex;gap:12px;align-items:center;margin-top:10px">
+          <div style="flex:1">
+            <div class="small-muted">Grand total (USD)</div>
+            <div id="totalsSumUsd" style="font-weight:700">$0.00</div>
+          </div>
+          <div style="flex:1">
+            <div class="small-muted">Grand total (IQD)</div>
+            <div id="totalsSumIqd" style="font-weight:700">0 IQD</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Customer Balance -->
+      <section class="panel panel--balance" id="balancePanel" style="margin-top:8px;">
+        <div class="panel__header">
+          <div>
+            <h3 style="margin:0 0 6px 0">Customer Balance — remaining after purchases</h3>
+            <div class="small-muted">Enter customer's balance and optionally choose to relay to Multiple Totals</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="panel__reset" id="resetBalance">Reset Balance</button>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <div style="flex:1;min-width:160px">
+            <label>Customer balance (USD)</label>
+            <input id="balanceUsd" class="input num" type="text" inputmode="decimal" placeholder="e.g. 200.00">
+          </div>
+
+          <div style="flex:1;min-width:160px">
+            <label>Custom total to subtract (USD)</label>
+            <input id="balanceCustomTotal" class="input num" type="text" inputmode="decimal" placeholder="e.g. 35.18">
+          </div>
+
+          <div style="flex:0 0 220px">
+            <label style="display:flex;align-items:center;gap:8px"><input id="balanceUseAggregator" class="checkbox" type="checkbox"> Use Multiple Totals instead</label>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
+          <div style="flex:1">
+            <div class="small-muted">Remaining (USD)</div>
+            <div id="balanceRemainingUsd" style="font-weight:700">$0.00</div>
+          </div>
+
+          <div style="flex:1">
+            <div class="small-muted">Remaining (IQD)</div>
+            <div id="balanceRemainingIqd" style="font-weight:700">0 IQD</div>
+          </div>
+
+          <div style="flex:0 0 120px;display:flex;flex-direction:column;gap:8px">
+            <button id="balance_copy" class="btn">Copy remaining</button>
+            <div class="small-muted" style="font-size:12px">Updates live — no compute button needed</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- RIGHT column -->
+    <aside>
+
+      <!-- Summary -->
+      <section class="panel panel--summary">
+        <div class="panel__header">
+          <div>
+            <h3 style="margin:0 0 6px 0">Summary</h3>
+            <div class="small-muted">Per-item values shown; total is per-item subtotal × quantity + local shipping</div>
+          </div>
+          <button class="panel__reset" id="resetSummary">Reset Summary</button>
+        </div>
+
+        <div class="summary">
+          <div class="line"><div>Item price</div><div id="showPrice">$0.00</div></div>
+          <div class="line"><div>Tax (per item, <span id="showTaxPct">0</span>%)</div><div id="showTax">$0.00</div></div>
+          <div class="line"><div>Commission (per item)</div><div id="showComm">$0.00</div></div>
+          <div class="line"><div>Shipping (per item) <span id="shipTypeLabel" style="color:var(--muted);font-size:12px"></span></div><div id="showShip">$0.00 <span id="shipEquiv" style="color:var(--muted);font-size:12px"></span></div></div>
+          <div class="line"><div>Local shipping (order)</div><div id="showLocal">$0.00</div></div>
+
+          <div class="line total" style="margin-top:6px;background:linear-gradient(90deg, rgba(79,70,229,0.03), rgba(6,182,212,0.02))">
+            <div><svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 1v22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Total</div>
+            <div><span id="showTotal" class="total-blue">$0.00</span></div>
+          </div>
+
+          <div class="iqd-line"><div><svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.2"/></svg> Total (IQD)</div><div id="showTotalIQD" class="total-blue">0 IQD</div></div>
+
+        </div>
+
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap">
+          <div class="muted">Live preview — updates automatically</div>
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="btn" id="copyBtn">Copy (English)</button>
+              <button class="btn" id="copyKurdish">Copy (Kurdish)</button>
+              <button class="btn" id="copyArabic">Copy (Arabic)</button>
+              <div id="copyStatus" class="copy-status"> </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Payback -->
+      <section class="panel panel--payback" style="margin-top:12px">
+        <div class="panel__header">
+          <div>
+            <h3 style="margin:0 0 6px 0">Payback / Change</h3>
+            <div class="small-muted">Amount due is independent — enter manually.</div>
+          </div>
+          <button class="panel__reset" id="resetPayback">Reset Payback</button>
+        </div>
+
+        <div class="payback">
+          <div style="flex:1;min-width:220px">
+            <label style="margin-bottom:6px">Amount due (USD)</label>
+            <input id="payDue" class="input num" type="text" inputmode="decimal" placeholder="Enter due amount (independent)">
+          </div>
+
+          <div class="pay-row">
+            <div style="flex:1;min-width:220px">
+              <label style="margin-bottom:6px">Paid (USD)</label>
+              <input id="paidUsd" class="input num" type="text" inputmode="decimal" placeholder="e.g. 100">
+            </div>
+
+            <div style="flex:1;min-width:220px">
+              <label style="margin-bottom:6px">Paid (IQD)</label>
+              <input id="paidIqd" class="input num" type="text" inputmode="numeric" placeholder="e.g. 100000">
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="flex:1">
+              <div class="small-muted">Return / Due (USD)</div>
+              <div id="payReturnUsd" style="font-weight:700">$0.00</div>
+            </div>
+            <div style="flex:1">
+              <div class="small-muted">Return / Due (IQD)</div>
+              <div id="payReturnIqd" style="font-weight:700">0 IQD</div>
+            </div>
+            <div style="width:110px;text-align:right"><div class="small-muted">Status</div><div id="payStatus" class="badge">—</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Percentage -->
+      <section class="panel panel--percent" style="margin-top:12px">
+        <div class="panel__header">
+          <div>
+            <h3 style="margin:0 0 6px 0">Percentage Calculator</h3>
+            <div class="small-muted">Check to use Summary Total; otherwise enter base manually.</div>
+          </div>
+          <button class="panel__reset" id="resetPercent">Reset Percent</button>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:8px"><input id="useTotalForPercent" class="checkbox" type="checkbox"> Use Summary Total as base</label>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div style="flex:1">
+              <label>Base amount (USD)</label>
+              <input id="percentBase" class="input num" type="text" inputmode="decimal" value="">
+            </div>
+            <div style="flex:0 0 140px">
+              <label>Percentage (%)</label>
+              <input id="percentPct" class="input small num" type="text" inputmode="decimal" value="50">
+            </div>
+            <div style="flex:0 0 180px">
+              <div class="small-muted">Result (USD)</div>
+              <div id="percentResultUsd" style="font-weight:700">$0.00</div>
+            </div>
+            <div style="flex:0 0 180px">
+              <div class="small-muted">Result (IQD)</div>
+              <div id="percentResultIqd" style="font-weight:700">0 IQD</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Converter -->
+      <section class="panel panel--converter" style="margin-top:12px">
+        <div class="panel__header">
+          <div>
+            <h3 style="margin:0 0 6px 0">Currency Converter</h3>
+            <div class="small-muted">Uses exchange rate from Inputs</div>
+          </div>
+          <button class="panel__reset" id="resetConverter">Reset Converter</button>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="convAmount" class="input small num" type="text" inputmode="decimal" placeholder="Amount">
+          <label style="display:flex;align-items:center;gap:8px"><input name="convDir" id="usdToIqd" class="radio" type="radio" checked> USD → IQD</label>
+          <label style="display:flex;align-items:center;gap:8px"><input name="convDir" id="iqdToUsd" class="radio" type="radio"> IQD → USD</label>
+          <div style="margin-left:auto;font-weight:700" id="convResult">—</div>
+        </div>
+      </section>
+
+    </aside>
+
+    <div style="grid-column:1/-1;text-align:center;font-size:12px;color:var(--muted);margin-top:8px">Made with ❤️ — By <strong><a href="https://www.instagram.com/i4m_4so/" style="color: gold; font-size: large;">Aso Karzan</a></strong></div>
+  </div>
+
+  <script>
+    /* ---------- Helpers ---------- */
+    const DEFAULTS = { tax:6, commission:1, perLb:6, perUsd:1415, percentDefault:50 };
+
+    // format USD with commas and 2 decimals
+    function formatUSD(n){
+      n = Number(n) || 0;
+      return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2, });
+    }
+    function toMoneyStr(n){ return '$' + formatUSD(n); }
+    function toIQDStr(n){ return Math.round(n).toLocaleString() + ' IQD'; }
+
+    // parse numeric value from input that may contain commas
+    function parseInputNumber(el){
+      if(!el) return 0;
+      const v = String(el.value || '').replace(/,/g, '').trim();
+      if(v === '') return 0;
+      // allow integers for IQD, but general parseFloat
+      const num = Number(v);
+      return isNaN(num) ? 0 : num;
+    }
+
+    // attach focus/blur formatting to numeric-like inputs
+    function attachCommaFormatting(el, opts = { decimals: 2, integer:false }){
+      if(!el) return;
+      el.addEventListener('focus', ()=>{
+        // remove commas
+        const raw = String(el.value || '').replace(/,/g, '');
+        el.value = raw;
+      });
+      el.addEventListener('blur', ()=>{
+        const val = parseInputNumber(el);
+        if(opts.integer){
+          el.value = val ? Number(Math.round(val)).toLocaleString() : '';
+        } else {
+          el.value = val ? formatUSD(val) : '';
+        }
+      });
+      // optionally format while typing small convenience (don't insert commas while editing)
+      el.addEventListener('input', ()=>{
+        // allow digits, dot, comma, minus
+        el.value = el.value.replace(/[^\d\.,-]/g, '');
+      });
+    }
+
+    // convenience to set formatted value programmatically
+    function setFormatted(el, num, opts = { decimals:2, integer:false }){
+      if(!el) return;
+      if(opts.integer) el.value = num ? Math.round(num).toLocaleString() : '';
+      else el.value = num ? formatUSD(num) : '';
+    }
+
+    // Arabic-Indic digits
+    function toArabicDigits(str){
+      const map = {'0':'٠','1':'١','2':'٢','3':'٣','4':'٤','5':'٥','6':'٦','7':'٧','8':'٨','9':'٩','.':'.',',':','};
+      return String(str).replace(/[0-9]/g, d=>map[d]);
+    }
+
+    /* ---------- DOM ---------- */
+    // inputs (many are now text inputs that show commas on blur)
+    const $ = id => document.getElementById(id);
+
+    const priceEl = $('price');
+    const quantityEl = $('quantity');
+    const shippingInput = $('shippingInput');
+    const shippingLabel = $('shippingLabel');
+    const shipFlatTop = $('shipFlatTop');
+    const shipWeightTop = $('shipWeightTop');
+    const perLbEl = $('perLb');
+    const unlockPerLb = $('unlockPerLb');
+    const localShippingEl = $('localShipping');
+    const taxEl = $('tax');
+    const commissionEl = $('commission');
+    const unlockTaxEl = $('unlockTax');
+    const perUsdEl = $('perUsd');
+    const unlockIQDEl = $('unlockIQD');
+
+    // summary outputs
+    const showPrice = $('showPrice');
+    const showTax = $('showTax');
+    const showComm = $('showComm');
+    const showShip = $('showShip');
+    const showLocal = $('showLocal');
+    const showTotal = $('showTotal');
+    const showTotalIQD = $('showTotalIQD');
+    const showTaxPct = $('showTaxPct');
+    const shipTypeLabel = $('shipTypeLabel');
+    const shipEquiv = $('shipEquiv');
+
+    // payback
+    const paidUsdEl = $('paidUsd');
+    const paidIqdEl = $('paidIqd');
+    const payDueEl = $('payDue');
+    const payReturnUsd = $('payReturnUsd');
+    const payReturnIqd = $('payReturnIqd');
+    const payStatus = $('payStatus');
+
+    // copies
+    const copyBtn = $('copyBtn');
+    const copyKurdishBtn = $('copyKurdish');
+    const copyArabicBtn = $('copyArabic');
+    const copyStatus = $('copyStatus');
+
+    // percent
+    const useTotalForPercent = $('useTotalForPercent');
+    const percentBaseEl = $('percentBase');
+    const percentPctEl = $('percentPct');
+    const percentResultUsd = $('percentResultUsd');
+    const percentResultIqd = $('percentResultIqd');
+
+    // converter
+    const convAmountEl = $('convAmount');
+    const usdToIqdRadio = $('usdToIqd');
+    const iqdToUsdRadio = $('iqdToUsd');
+    const convResultEl = $('convResult');
+
+    // ship finder
+    const sf_total = $('sf_total');
+    const sf_item = $('sf_item');
+    const sf_qty = $('sf_qty');
+    const sf_local = $('sf_local');
+    const sf_perLb = $('sf_perLb');
+    const sf_compute = $('sf_compute');
+    const sf_shippingPerItem = $('sf_shippingPerItem');
+    const sf_shippingTotal = $('sf_shippingTotal');
+    const sf_weightTotal = $('sf_weightTotal');
+    const sf_formula = $('sf_formula');
+    const sf_copy = $('sf_copy');
+
+    // aggregator
+    const addTotalBtn = $('addTotalBtn');
+    const clearTotalsBtn = $('clearTotalsBtn');
+    const copyTotalsBtn = $('copyTotalsBtn');
+    const totalsList = $('totalsList');
+    const totalsSumUsd = $('totalsSumUsd');
+    const totalsSumIqd = $('totalsSumIqd');
+
+    // balance
+    const balanceUsd = $('balanceUsd');
+    const balanceCustomTotal = $('balanceCustomTotal');
+    const balanceUseAggregator = $('balanceUseAggregator');
+    const balance_copy = $('balance_copy');
+    const balanceRemainingUsd = $('balanceRemainingUsd');
+    const balanceRemainingIqd = $('balanceRemainingIqd');
+
+    // resets
+    const resetInputs = $('resetInputs');
+    const resetShipFinder = $('resetShipFinder');
+    const resetMulti = $('resetMulti');
+    const resetBalance = $('resetBalance');
+    const resetSummary = $('resetSummary');
+    const resetPayback = $('resetPayback');
+    const resetPercent = $('resetPercent');
+    const resetConverter = $('resetConverter');
+
+    /* ---------- Attach comma formatting ---------- */
+    const numInputs = [
+      priceEl, shippingInput, perLbEl, localShippingEl, perUsdEl,
+      paidUsdEl, paidIqdEl, payDueEl, percentBaseEl, convAmountEl,
+      sf_total, sf_item, sf_local, sf_perLb,
+      balanceUsd, balanceCustomTotal
+    ];
+    numInputs.forEach(el=>{
+      if(!el) return;
+      // IQD presumably integer (paidIqd), but we'll keep 2 decimals consistent, except for paidIqd/balance maybe integer
+      const integerLike = (el.id === 'paidIqd');
+      attachCommaFormatting(el, { decimals: integerLike ? 0 : 2, integer: integerLike });
+    });
+
+    // aggregator inputs will be created dynamically; attach format when created
+
+    /* ---------- Core calculations ---------- */
+    function updateShippingUI(){
+      if(shipFlatTop.checked){
+        shippingLabel.textContent = 'Shipping ($ per item)';
+        shippingInput.placeholder = '';
+      } else {
+        shippingLabel.textContent = 'Shipping (weight per item)';
+        shippingInput.placeholder = 'weight per item (lbs)';
+      }
+    }
+
+    function getNumberFromField(el){
+      // some fields may be missing; safe parse
+      return parseInputNumber(el);
+    }
+
+    function computeSummary(){
+      const price = getNumberFromField(priceEl);
+      const qty = Math.max(1, Math.round(getNumberFromField(quantityEl) || 1));
+      const taxPct = getNumberFromField(taxEl) || DEFAULTS.tax;
+      const commission = getNumberFromField(commissionEl) || DEFAULTS.commission;
+
+      // shipping per item calculation depends on mode
+      const rate = getNumberFromField(perLbEl) || 0;
+      let shippingPerItem = 0;
+      let shipTypeText = '';
+      shipEquiv.textContent = '';
+
+      if(shipFlatTop.checked){
+        const shippingD = getNumberFromField(shippingInput);
+        shippingPerItem = isNaN(shippingD) ? 0 : shippingD;
+        if(rate > 0 && shippingD > 0){
+          const eqLbs = shippingD / rate;
+          shipTypeText = `(${formatNumber(eqLbs)} Lbs)`;
+        } else {
+          shipTypeText = '(flat per item)';
+        }
+      } else {
+        const w = getNumberFromField(shippingInput) || 0; // weight per item
+        shippingPerItem = w * rate;
+        shipTypeText = w ? `(${formatNumber(w)} Lbs × $${Number(rate).toFixed(2)})` : '(lbs per item)';
+      }
+
+      const local = getNumberFromField(localShippingEl) || 0;
+      const taxPerItem = price * (taxPct/100);
+      const perItemSubtotal = price + taxPerItem + commission + shippingPerItem;
+      const total = perItemSubtotal * qty + local;
+      const perUsd = getNumberFromField(perUsdEl) || DEFAULTS.perUsd;
+      const totalIqd = total * perUsd;
+
+      // Update UI
+      showPrice.textContent = qty > 1 ? `${toMoneyStr(price)} × ${qty}` : toMoneyStr(price);
+      showTax.textContent = toMoneyStr(taxPerItem);
+      showComm.textContent = toMoneyStr(commission);
+      showShip.textContent = toMoneyStr(shippingPerItem);
+      shipEquiv.textContent = qty > 1 ? ` / ${toMoneyStr(shippingPerItem * qty)} total` : '';
+      showLocal.textContent = toMoneyStr(local);
+
+      showTotal.textContent = '$' + formatUSD(total);
+      showTotalIQD.textContent = toIQDStr(totalIqd);
+      showTaxPct.textContent = Number(taxPct).toFixed(2);
+      shipTypeLabel.textContent = shipTypeText;
+
+      // mark totals blue
+      showTotal.classList.add('total-blue');
+      showTotalIQD.classList.add('total-blue');
+
+      // sync other modules
+      computePayback();
+      computeConverter();
+      computePercent();
+      computeAggregateTotals();
+      computeBalanceRemaining();
+    }
+
+    // helper used in strings
+    function formatNumber(v){ if(!isFinite(v)) return '0'; const r = Math.round(v*100)/100; return Number.isInteger(r) ? String(r) : r.toFixed(2); }
+
+    /* Payback (independent) */
+    function computePayback(){
+      const perUsd = getNumberFromField(perUsdEl) || DEFAULTS.perUsd;
+      const dueUsd = getNumberFromField(payDueEl) || 0;
+      const paidUsdRaw = getNumberFromField(paidUsdEl) || 0;
+      const paidIqdRaw = getNumberFromField(paidIqdEl) || 0;
+      const paidUsd = paidUsdRaw + (paidIqdRaw / perUsd);
+      const diff = paidUsd - dueUsd;
+
+      if(isNaN(diff)){
+        payStatus.textContent = '—';
+        payReturnUsd.textContent = '$0.00';
+        payReturnIqd.textContent = '0 IQD';
+        updatePaybackStatus('neutral');
+        return;
+      }
+
+      if(Math.abs(diff) < 0.005) payStatus.textContent = 'Exact';
+      else if(diff > 0) payStatus.textContent = 'Return';
+      else payStatus.textContent = 'Due';
+
+      const returnUsd = Math.abs(diff);
+      const returnIqd = returnUsd * perUsd;
+      payReturnUsd.textContent = toMoneyStr(returnUsd);
+      payReturnIqd.textContent = toIQDStr(returnIqd);
+
+      updatePaybackStatus(payStatus.textContent);
+    }
+    function updatePaybackStatus(status){
+      const elems = [payReturnUsd, payReturnIqd, payStatus];
+      elems.forEach(el=>{
+        el.classList.remove('status-return','status-due','status-exact','status-neutral');
+      });
+      if(status === 'Return') elems.forEach(el=>el.classList.add('status-return'));
+      else if(status === 'Due') elems.forEach(el=>el.classList.add('status-due'));
+      else if(status === 'Exact') elems.forEach(el=>el.classList.add('status-exact'));
+      else elems.forEach(el=>el.classList.add('status-neutral'));
+    }
+
+    /* Converter */
+    function computeConverter(){
+      const amt = getNumberFromField(convAmountEl) || 0;
+      const rate = getNumberFromField(perUsdEl) || DEFAULTS.perUsd;
+      if(usdToIqdRadio.checked){
+        const out = amt * rate;
+        convResultEl.textContent = toIQDStr(out);
+      } else {
+        const out = amt / rate;
+        convResultEl.textContent = toMoneyStr(out);
+      }
+    }
+
+    /* Percentage */
+    function computePercent(){
+      const perUsd = getNumberFromField(perUsdEl) || DEFAULTS.perUsd;
+      const base = getNumberFromField(percentBaseEl) || 0;
+      const pct = getNumberFromField(percentPctEl) || DEFAULTS.percentDefault;
+      const outUsd = base * (pct/100);
+      const outIqd = outUsd * perUsd;
+      percentResultUsd.textContent = toMoneyStr(outUsd);
+      percentResultIqd.textContent = toIQDStr(outIqd);
+    }
+
+    /* Shipping Finder (constants) */
+    const SF_TAX = 6;
+    const SF_COMM = 1;
+
+    function computeShippingFinder(){
+      const T = getNumberFromField(sf_total);
+      const P = getNumberFromField(sf_item);
+      const q = Math.max(1, Math.round(getNumberFromField(sf_qty) || 1));
+      const L = getNumberFromField(sf_local);
+      const perLb = getNumberFromField(sf_perLb) || 0;
+
+      const shippingPerItem = ( (T - L) / q ) - P - (P * (SF_TAX/100)) - SF_COMM;
+      const shippingPerItemClamped = isFinite(shippingPerItem) ? shippingPerItem : 0;
+      const shippingTotal = shippingPerItemClamped * q;
+      const weightTotal = perLb > 0 ? (shippingTotal / perLb) : 0;
+      const weightPerItem = perLb > 0 ? (shippingPerItemClamped / perLb) : 0;
+
+      sf_shippingPerItem.textContent = toMoneyStr(shippingPerItemClamped);
+      sf_shippingTotal.textContent = toMoneyStr(shippingTotal);
+      sf_weightTotal.textContent = perLb > 0 ? `${formatNumber(weightTotal)} Lbs (≈ ${formatNumber(weightPerItem)} Lbs/item)` : '—';
+
+      const formula = `Using constants: tax = ${SF_TAX}%, commission = $${SF_COMM}\n\n` +
+                      `Per-item shipping S = (DesiredTotal - Local) / qty - P - P*(tax/100) - C\n\n` +
+                      `=> S = (${T} - ${L}) / ${q} - ${P} - ${P}*(${SF_TAX}/100) - ${SF_COMM}\n` +
+                      `=> S = ${formatNumber(shippingPerItemClamped)} USD per item\n` +
+                      `Total shipping = S × qty = ${toMoneyStr(shippingTotal)}\n` +
+                      (perLb > 0 ? `Estimated total weight = ${formatNumber(weightTotal)} Lbs (rate ${perLb}$/lb)\n` : '');
+      sf_formula.textContent = formula;
+    }
+    function copyShippingFormula(){ navigator.clipboard && navigator.clipboard.writeText(sf_formula.textContent || 'No formula').then(()=> flashStatus('Formula copied ✅')).catch(()=> flashStatus('Copy failed')); }
+
+    /* Multiple totals aggregator */
+    function addTotalRow(value){
+      const row = document.createElement('div');
+      row.className = 'agg-row';
+      const inp = document.createElement('input');
+      inp.type = 'text';
+      inp.className = 'input num';
+      inp.placeholder = 'Enter total (USD)';
+      inp.value = (value != null && value !== '') ? (formatUSD(Number(value))) : '';
+      attachCommaFormatting(inp, { decimals:2, integer:false });
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'muted-btn';
+      removeBtn.textContent = 'Remove';
+      removeBtn.addEventListener('click', ()=>{
+        totalsList.removeChild(row);
+        computeAggregateTotals();
+      });
+
+      row.appendChild(inp);
+      row.appendChild(removeBtn);
+      totalsList.appendChild(row);
+
+      inp.addEventListener('input', ()=>{
+        computeAggregateTotals();
+        // if last row and has value, append empty
+        const rows = totalsList.querySelectorAll('.agg-row input');
+        if(rows.length){
+          const last = rows[rows.length - 1];
+          if(last === inp && inp.value.trim() !== ''){
+            addTotalRow('');
+          }
+        }
+      });
+      computeAggregateTotals();
+    }
+
+    function computeAggregateTotals(){
+      const perUsd = getNumberFromField(perUsdEl) || DEFAULTS.perUsd;
+      const rows = totalsList.querySelectorAll('.agg-row input');
+      let sum = 0;
+      rows.forEach(r => {
+        sum += parseInputNumber(r);
+      });
+      totalsSumUsd.textContent = toMoneyStr(sum);
+      totalsSumIqd.textContent = toIQDStr(sum * perUsd);
+      computeBalanceRemaining();
+    }
+
+    function clearAllTotals(){
+      totalsList.innerHTML = '';
+      addTotalRow('');
+      computeAggregateTotals();
+    }
+
+    function copyTotalsToClipboard(){
+      const perUsd = getNumberFromField(perUsdEl) || DEFAULTS.perUsd;
+      const rows = totalsList.querySelectorAll('.agg-row input');
+      let lines = ['Multiple totals:'];
+      let sum = 0;
+      rows.forEach((r, idx) => {
+        const v = parseInputNumber(r);
+        if(isNaN(v) || v === 0) return;
+        sum += v;
+        lines.push(`${idx+1}. ${toMoneyStr(v)}`);
+      });
+      lines.push(`Grand total: ${toMoneyStr(sum)} (${toIQDStr(sum * perUsd)})`);
+      const text = lines.join('\n');
+      navigator.clipboard && navigator.clipboard.writeText(text).then(()=> flashStatus('Totals copied ✅')).catch(()=> flashStatus('Copy failed'));
+    }
+
+    /* Customer balance */
+    function computeBalanceRemaining(){
+      const perUsd = getNumberFromField(perUsdEl) || DEFAULTS.perUsd;
+      const balance = getNumberFromField(balanceUsd) || 0;
+      let toSubtract = 0;
+      if(balanceUseAggregator.checked){
+        const rows = totalsList.querySelectorAll('.agg-row input');
+        rows.forEach(r => { toSubtract += parseInputNumber(r) || 0; });
+      } else {
+        toSubtract = getNumberFromField(balanceCustomTotal) || 0;
+      }
+      const remaining = balance - toSubtract;
+      balanceRemainingUsd.textContent = toMoneyStr(remaining);
+      balanceRemainingIqd.textContent = toIQDStr(remaining * perUsd);
+    }
+    function copyBalanceRemaining(){ const usd = balanceRemainingUsd.textContent; const iqd = balanceRemainingIqd.textContent; navigator.clipboard && navigator.clipboard.writeText(`Remaining balance: ${usd} (${iqd})`).then(()=> flashStatus('Balance copied ✅')).catch(()=> flashStatus('Copy failed')) }
+
+    /* Copy summary strings - updated shipping parenthetical formatting (no duplicate price) */
+    function buildEnglishSummary(){
+  const perUsd = getNumberFromField(perUsdEl) || DEFAULTS.perUsd;
+  const price = getNumberFromField(priceEl) || 0;
+  const qty = Math.max(1, Math.round(getNumberFromField(quantityEl) || 1));
+  const taxPct = getNumberFromField(taxEl) || DEFAULTS.tax;
+  const commission = getNumberFromField(commissionEl) || DEFAULTS.commission;
+  const shippingPerItem = getNumberFromField(shippingInput) || 0; // $ per item (or $ equivalent of weight)
+  const totalShipping = shippingPerItem * qty;
+  const local = getNumberFromField(localShippingEl) || 0;
+  const taxPerItem = price * (taxPct/100);
+  const total = parseFloat(showTotal.textContent.replace(/[$,]/g,'')) || 0;
+  const totalIqd = Math.round(total * perUsd).toLocaleString();
+
+  // --- compute weight-per-item (lbs) to show in the summary ---
+  const perLb = getNumberFromField(perLbEl) || 0; // $ per lb
+  const shipFlatChecked = !!(document.getElementById('shipFlatTop')?.checked);
+  const shipWeightChecked = !!(document.getElementById('shipWeightTop')?.checked);
+
+  let weightPerItem = 0;
+  if (shipWeightChecked) {
+    // When user selected 'lbs', shippingInput holds weight per item
+    weightPerItem = getNumberFromField(shippingInput) || 0;
+  } else {
+    // Flat $ mode: infer lbs per item if we know $/lb
+    if (perLb > 0) {
+      weightPerItem = shippingPerItem / perLb;
+    } else {
+      weightPerItem = 0;
+    }
+  }
+  const weightDisplay = (Math.abs(weightPerItem) >= 0.005) ? Number(weightPerItem).toFixed(2) : '0';
+
+  // build english text exactly as requested
+  let txt = `🧾 Order summary\n`;
+  txt += `• Item unit: ${toMoneyStr(price)}\n`;
+  txt += `• Quantity: ${qty}\n`;
+  txt += `• Tax (per item ${Number(taxPct).toFixed(2)}%): ${toMoneyStr(taxPerItem)}\n`;
+  txt += `• Commission (per item): ${toMoneyStr(commission)}\n`;
+  txt += `• Shipping (${weightDisplay} lbs): ${toMoneyStr(shippingPerItem)} (per item)\n`;
+  txt += `• Local shipping : ${toMoneyStr(local)}\n\n`;
+  txt += `💰 Total: ${toMoneyStr(total)} (${totalIqd} IQD)\n\n`;
+  txt += `( rate: 1 USD = ${perUsd} IQD )`;
+  return txt;
+
+    }
+
+    function buildKurdishSummary(){
+  const perUsd = getNumberFromField(perUsdEl) || DEFAULTS.perUsd;
+  const price = getNumberFromField(priceEl) || 0;
+  const qty = Math.max(1, Math.round(getNumberFromField(quantityEl) || 1));
+  const taxPct = getNumberFromField(taxEl) || DEFAULTS.tax;
+  const commission = getNumberFromField(commissionEl) || DEFAULTS.commission;
+  const shippingPerItem = getNumberFromField(shippingInput) || 0; // $ per item (or $ equivalent of weight)
+  const totalShipping = shippingPerItem * qty;
+  const local = getNumberFromField(localShippingEl) || 0;
+  const taxPerItem = price * (taxPct/100);
+  const total = parseFloat(showTotal.textContent.replace(/[$,]/g,'')) || 0;
+  const totalIqd = Math.round(total * perUsd).toLocaleString();
+
+  // --- compute weight-per-item (lbs) to show in the summary ---
+  const perLb = getNumberFromField(perLbEl) || 0; // $ per lb
+  const shipFlatChecked = !!(document.getElementById('shipFlatTop')?.checked);
+  const shipWeightChecked = !!(document.getElementById('shipWeightTop')?.checked);
+
+  let weightPerItem = 0;
+  if (shipWeightChecked) {
+    // When user selected 'lbs', shippingInput holds weight per item
+    weightPerItem = getNumberFromField(shippingInput) || 0;
+  } else {
+    // Flat $ mode: infer lbs per item if we know $/lb
+    if (perLb > 0) {
+      weightPerItem = shippingPerItem / perLb;
+    } else {
+      weightPerItem = 0;
+    }
+  }
+  const weightDisplay = (Math.abs(weightPerItem) >= 0.005) ? Number(weightPerItem).toFixed(2) : '0';
+
+  // small parenthetical shows $ per 1 lb (as before)
+  const small = `(${toMoneyStr(perLb)} (1 پاوەند) بۆ هەر دانەیەک)`;
+
+  let txt = `🧾 پوختەی داواکاری\n`;
+  txt += `• نرخی بابەتی: ${Number(price).toFixed(2)}$ \n`;
+  txt += `• بڕ: ${qty}\n`;
+  txt += `• باج (بۆ هەر بابەتێک ${Number(taxPct).toFixed(2)}%): ${Number(taxPerItem).toFixed(2)}$ \n`;
+  txt += `• سوود (بۆ هەر دانەیەک): ${Number(commission).toFixed(2)}$ \n`;
+  // show shipping weight-per-item and shipping $ per item
+  txt += `• گەیاندن (${weightDisplay} lbs): ${toMoneyStr(shippingPerItem)} \n`;
+  txt += `• گەیاندنی ناوخۆیی : ${toMoneyStr(local)}\n\n`;
+  txt += `💰 کۆی گشتی: ${toMoneyStr(total)} (${totalIqd} دینار)\n\n`;
+  txt += `( نرخ: 1 دۆلار = ${perUsd} دینار )`;
+  return txt;
+
+    }
+
+    function buildArabicSummary(){
+   const perUsd = getNumberFromField(perUsdEl) || DEFAULTS.perUsd;
+  const price = getNumberFromField(priceEl) || 0;
+  const qty = Math.max(1, Math.round(getNumberFromField(quantityEl) || 1));
+  const taxPct = getNumberFromField(taxEl) || DEFAULTS.tax;
+  const commission = getNumberFromField(commissionEl) || DEFAULTS.commission;
+  const shippingPerItem = getNumberFromField(shippingInput) || 0; // $ per item (or $ equivalent of weight)
+  const totalShipping = shippingPerItem * qty;
+  const local = getNumberFromField(localShippingEl) || 0;
+  const taxPerItem = price * (taxPct/100);
+  const total = parseFloat(showTotal.textContent.replace(/[$,]/g,'')) || 0;
+  const totalIqdNum = Math.round(total * perUsd);
+  const totalIqdFormatted = totalIqdNum.toLocaleString();
+
+  // --- compute weight-per-item (lbs) to show in the summary ---
+  const perLb = getNumberFromField(perLbEl) || 0; // $ per lb
+  const shipFlatChecked = !!(document.getElementById('shipFlatTop')?.checked);
+  const shipWeightChecked = !!(document.getElementById('shipWeightTop')?.checked);
+
+  let weightPerItem = 0;
+  if (shipWeightChecked) {
+    weightPerItem = getNumberFromField(shippingInput) || 0;
+  } else {
+    if (perLb > 0) {
+      weightPerItem = shippingPerItem / perLb;
+    } else {
+      weightPerItem = 0;
+    }
+  }
+  const weightDisplay = (Math.abs(weightPerItem) >= 0.005) ? Number(weightPerItem).toFixed(2) : '0';
+
+  // Arabic digit conversion (if helper exists)
+  const arabPrice = (typeof toArabicDigits === 'function') ? toArabicDigits(Number(price).toFixed(2)) : Number(price).toFixed(2);
+  const arabQty = (typeof toArabicDigits === 'function') ? toArabicDigits(qty) : String(qty);
+  const arabTax = (typeof toArabicDigits === 'function') ? toArabicDigits(Number(taxPerItem).toFixed(2)) : Number(taxPerItem).toFixed(2);
+  const arabTaxPct = (typeof toArabicDigits === 'function') ? toArabicDigits(Number(taxPct).toFixed(2)) : Number(taxPct).toFixed(2);
+  const arabComm = (typeof toArabicDigits === 'function') ? toArabicDigits(Number(commission).toFixed(2)) : Number(commission).toFixed(2);
+  const arabShip = (typeof toArabicDigits === 'function') ? toArabicDigits(Number(shippingPerItem).toFixed(2)) : Number(shippingPerItem).toFixed(2);
+  const arabWeight = (typeof toArabicDigits === 'function') ? toArabicDigits(Number(weightPerItem).toFixed(2)) : Number(weightPerItem).toFixed(2);
+  const arabLocal = (typeof toArabicDigits === 'function') ? toArabicDigits(Number(local).toFixed(2)) : Number(local).toFixed(2);
+  const arabTotal = (typeof toArabicDigits === 'function') ? toArabicDigits(Number(total).toFixed(2)) : Number(total).toFixed(2);
+  const arabTotalIqd = (typeof toArabicDigits === 'function') ? toArabicDigits(totalIqdFormatted) : totalIqdFormatted;
+  const arabRate = (typeof toArabicDigits === 'function') ? toArabicDigits(perUsd) : String(perUsd);
+  const smallParenthetical = (typeof toArabicDigits === 'function') ? `(${toArabicDigits(Number(perLb).toFixed(2))} دولارات أمريكية (رطل واحد))` : `(${Number(perLb).toFixed(2)} دولارات أمريكية (رطل واحد))`;
+
+  let txt = `ملخص الطلب 🧾\n`;
+  txt += `• وحدة المنتج: ${arabPrice} دولارًا أمريكيًا\n`;
+  txt += `• الكمية: ${arabQty}\n`;
+  txt += `• الضريبة (${arabTaxPct}% لكل منتج): ${arabTax} دولارًا أمريكيًا\n`;
+  txt += `• العمولة (للمنتج): ${arabComm} دولارًا أمريكيًا\n`;
+  txt += `• الشحن (${arabWeight} رطل): ${arabShip} دولارًا أمريكيًا ${smallParenthetical}\n`;
+  txt += `• الشحن المحلي: ${arabLocal} دولارًا أمريكيًا\n`;
+  txt += `💰 الإجمالي: ${arabTotal} دولارًا أمريكيًا (${arabTotalIqd} دينارًا عراقيًا)\n`;
+  txt += `(السعر: ${toArabicDigits ? toArabicDigits('1') : '1'} دولار أمريكي = ${arabRate} دينارًا عراقيًا)`;
+  return txt;
+
+    }
+
+    /* ---------- Small helpers ---------- */
+    function flashStatus(msg){
+      const el = $('copyStatus');
+      if(!el) return;
+      el.textContent = msg;
+      setTimeout(()=> el.textContent = '', 2200);
+    }
+
+    /* ---------- Wiring & initialization ---------- */
+    function init(){
+      // default values
+      priceEl.value = '';
+      quantityEl.value = '1';
+      shippingInput.value = '';
+      perLbEl.value = String(DEFAULTS.perLb);
+      perLbEl.disabled = true;
+      localShippingEl.value = '';
+      perUsdEl.value = String(DEFAULTS.perUsd);
+      perUsdEl.disabled = true;
+      taxEl.value = String(DEFAULTS.tax); taxEl.disabled = true;
+      commissionEl.value = String(DEFAULTS.commission); commissionEl.disabled = true;
+
+      // attach events
+      [priceEl, quantityEl, shippingInput, perLbEl, localShippingEl, taxEl, commissionEl, perUsdEl].forEach(el=>{
+        if(!el) return;
+        el.addEventListener('input', computeSummary);
+        el.addEventListener('blur', computeSummary);
+      });
+      [shipFlatTop, shipWeightTop].forEach(r=>r.addEventListener('change', ()=>{ updateShippingUI(); computeSummary(); }));
+
+      unlockTaxEl.addEventListener('change', (e)=>{
+        const unlocked = e.target.checked;
+        taxEl.disabled = !unlocked;
+        commissionEl.disabled = !unlocked;
+        if(!unlocked){ taxEl.value = String(DEFAULTS.tax); commissionEl.value = String(DEFAULTS.commission); }
+        computeSummary();
+      });
+      unlockPerLb.addEventListener('change', (e)=>{
+        const unlocked = e.target.checked;
+        perLbEl.disabled = !unlocked;
+        if(!unlocked) perLbEl.value = String(DEFAULTS.perLb);
+        computeSummary();
+      });
+      unlockIQDEl.addEventListener('change', (e)=>{
+        const unlocked = e.target.checked;
+        perUsdEl.disabled = !unlocked;
+        if(!unlocked) perUsdEl.value = String(DEFAULTS.perUsd);
+        computeSummary();
+      });
+
+      // payback listeners
+      [paidUsdEl, paidIqdEl, payDueEl].forEach(el=>{
+        if(!el) return;
+        el.addEventListener('input', computePayback);
+        el.addEventListener('blur', computePayback);
+      });
+
+      // converter
+      convAmountEl.addEventListener('input', computeConverter);
+      usdToIqdRadio.addEventListener('change', computeConverter);
+      iqdToUsdRadio.addEventListener('change', computeConverter);
+
+      // percent panel
+      useTotalForPercent.addEventListener('change', (e)=>{
+        if(e.target.checked){
+          percentBaseEl.disabled = true;
+          const numericTotal = parseFloat(showTotal.textContent.replace(/[$,]/g,'')) || 0;
+          percentBaseEl.value = numericTotal ? formatUSD(numericTotal) : '';
+        } else {
+          percentBaseEl.disabled = false;
+          percentBaseEl.value = '';
+        }
+        computePercent();
+      });
+      percentBaseEl.addEventListener('input', computePercent);
+      percentPctEl.addEventListener('input', computePercent);
+
+      // copy summary buttons
+      copyBtn.addEventListener('click', async ()=>{
+        const txt = buildEnglishSummary();
+        try{ await navigator.clipboard.writeText(txt); flashStatus('English copied ✅'); } catch(e){ flashStatus('Copy failed'); }
+      });
+      copyKurdishBtn.addEventListener('click', async ()=>{
+        const txt = buildKurdishSummary();
+        try{ await navigator.clipboard.writeText(txt); flashStatus('Kurdish copied ✅'); } catch(e){ flashStatus('Copy failed'); }
+      });
+      copyArabicBtn.addEventListener('click', async ()=>{
+        const txt = buildArabicSummary();
+        try{ await navigator.clipboard.writeText(txt); flashStatus('Arabic copied ✅'); } catch(e){ flashStatus('Copy failed'); }
+      });
+
+      // ship finder
+      sf_compute.addEventListener('click', computeShippingFinder);
+      sf_copy.addEventListener('click', copyShippingFormula);
+
+      // aggregator
+      addTotalBtn.addEventListener('click', ()=> addTotalRow(''));
+      clearTotalsBtn.addEventListener('click', clearAllTotals);
+      copyTotalsBtn.addEventListener('click', copyTotalsToClipboard);
+
+      // balance
+      [balanceUsd, balanceCustomTotal, balanceUseAggregator].forEach(el=>{
+        if(!el) return;
+        el.addEventListener('input', computeBalanceRemaining);
+        el.addEventListener('change', computeBalanceRemaining);
+      });
+      balance_copy.addEventListener('click', copyBalanceRemaining);
+
+      // reset handlers
+      resetInputs.addEventListener('click', ()=>{
+        priceEl.value=''; quantityEl.value='1'; shippingInput.value=''; perLbEl.value=String(DEFAULTS.perLb); perLbEl.disabled=true; unlockPerLb.checked=false;
+        localShippingEl.value=''; taxEl.value=String(DEFAULTS.tax); commissionEl.value=String(DEFAULTS.commission); unlockTaxEl.checked=false; taxEl.disabled=true; commissionEl.disabled=true;
+        perUsdEl.value=String(DEFAULTS.perUsd); perUsdEl.disabled=true; unlockIQDEl.checked=false;
+        shipFlatTop.checked=true; shipWeightTop.checked=false;
+        computeSummary();
+        flashStatus('Inputs reset');
+      });
+      resetShipFinder.addEventListener('click', ()=>{
+        sf_total.value=''; sf_item.value=''; sf_qty.value='1'; sf_local.value='0'; sf_perLb.value=String(DEFAULTS.perLb);
+        sf_shippingPerItem.textContent='$0.00'; sf_shippingTotal.textContent='$0.00'; sf_weightTotal.textContent='0 Lbs'; sf_formula.textContent='';
+        flashStatus('Ship Finder reset');
+      });
+      resetMulti.addEventListener('click', ()=>{ clearAllTotals(); flashStatus('Multiple reset'); });
+      resetBalance.addEventListener('click', ()=>{ balanceUsd.value=''; balanceCustomTotal.value=''; balanceUseAggregator.checked=false; computeBalanceRemaining(); flashStatus('Balance reset'); });
+      resetSummary.addEventListener('click', ()=>{ resetInputs.click(); });
+      resetPayback.addEventListener('click', ()=>{ paidUsdEl.value=''; paidIqdEl.value=''; payDueEl.value=''; computePayback(); flashStatus('Payback reset'); });
+      resetPercent.addEventListener('click', ()=>{ percentPctEl.value=String(DEFAULTS.percentDefault); useTotalForPercent.checked=false; percentBaseEl.disabled=false; percentBaseEl.value=''; computePercent(); flashStatus('Percent reset'); });
+      resetConverter.addEventListener('click', ()=>{ convAmountEl.value=''; usdToIqdRadio.checked=true; computeConverter(); flashStatus('Converter reset'); });
+
+      // initialize aggregator with one row
+      addTotalRow('');
+
+      // initial render
+      updateShippingUI();
+      computeSummary();
+      computeAggregateTotals();
+    }
+
+    // run
+    init();
+
+  </script>
+</body>
+</html>
