@@ -70,6 +70,7 @@ export function middleware(req) {
     <div class="row">
       <button type="submit">Unlock</button>
       <button type="button" class="muted" onclick="document.querySelector('input[name=password]').value=''">Cancel</button>
+      <p>for password ask <a href="https://www.instagram.com/i4m_4so/" style="color: gold; font-size: large;">Aso Karzan</a></p>
     </div>
   </form>
 </body></html>`;
