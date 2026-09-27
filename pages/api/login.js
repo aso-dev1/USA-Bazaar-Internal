@@ -2,7 +2,7 @@ import { serialize } from "cookie";
 
 const COOKIE_NAME = "ubz_auth";
 const TTL_SECONDS = 60 * 60 * 48; // 48 hours
-const PASSWORD = process.env.PASSWORD ?? "akh";
+const PASSWORD = process.env.PASSWORD ?? "FAB";
 
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
